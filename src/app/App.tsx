@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Github,
   ExternalLink,
   Mail,
   Linkedin,
-  Twitter,
   ChevronDown,
   Terminal,
   Code2,
-  Layers,
   Database,
   Globe,
   Cpu,
@@ -17,14 +15,13 @@ import {
   X,
   MapPin,
   Calendar,
-  Award,
   Zap,
   ChevronLeft,
   ChevronRight,
-  PlayCircle,
-  Upload,
-  Phone,
   Image as ImageIcon,
+  Compass,
+  Wrench,
+  Heart,
 } from "lucide-react";
 import imgAbout from "figma:asset/5b4f19c9a3ac274ee7fa0dd44872aab24c3f9151.png";
 import imgMem1 from "figma:asset/a9936188eb6db85cde1d0d3430a54cec4b131df6.png";
@@ -36,57 +33,58 @@ const NAV_ITEMS = [
   "Projects",
   "Experience",
   "Education",
-  "Contact",
 ];
 const SKILLS = [
   {
     category: "Languages",
     icon: <Code2 size={16} />,
-    items: [
-      { name: "Python", level: 80 },
-      { name: "TypeScript / JavaScript", level: 78 },
-      { name: "SQL", level: 72 },
-    ],
+    items: ["Python", "TypeScript / JavaScript", "SQL"],
   },
   {
     category: "Backend",
     icon: <Database size={16} />,
     items: [
-      { name: "NestJS / FastAPI", level: 76 },
-      { name: "Node.js / Express", level: 78 },
-      { name: "PostgreSQL / Prisma", level: 74 },
-      { name: "MongoDB / Redis", level: 72 },
+      "NestJS / FastAPI",
+      "Node.js / Express",
+      "PostgreSQL / Prisma",
+      "MongoDB / Redis",
     ],
   },
   {
     category: "Frontend",
     icon: <Globe size={16} />,
-    items: [
-      { name: "React / Next.js", level: 80 },
-      { name: "Three.js", level: 66 },
-      { name: "Tailwind CSS", level: 82 },
-    ],
+    items: ["React / Next.js", "Three.js", "Tailwind CSS"],
   },
   {
     category: "AI",
     icon: <Cpu size={16} />,
-    items: [
-      { name: "LangGraph + RAG", level: 74 },
-      { name: "Gemini / OpenAI", level: 78 },
-      { name: "n8n workflows", level: 80 },
-    ],
+    items: ["LangGraph + RAG", "Gemini / OpenAI", "n8n workflows"],
   },
   {
     category: "DevOps",
     icon: <Zap size={16} />,
-    items: [
-      { name: "Docker", level: 70 },
-      { name: "GitHub Actions / CI/CD", level: 68 },
-      { name: "Playwright / Vitest", level: 66 },
-      { name: "pytest", level: 62 },
-    ],
+    items: ["Docker", "GitHub Actions / CI/CD", "Playwright / Vitest", "pytest"],
   },
 ];
+
+const ABOUT_TRAITS = [
+  {
+    title: "Curious first",
+    icon: <Compass size={16} />,
+    text: "I don't pretend I already know. I ask, read the code, and stay until the mental model actually clicks.",
+  },
+  {
+    title: "Hands-on by default",
+    icon: <Wrench size={16} />,
+    text: "I learn faster with a running service than with another tutorial. Build, break, fix, repeat.",
+  },
+  {
+    title: "Useful over flashy",
+    icon: <Heart size={16} />,
+    text: "I care whether someone will actually use what I ship — a teammate, a teacher, or a user at 1am.",
+  },
+];
+
 const PROJECTS = [
   {
     title: "CosmoLearn Edu",
@@ -104,10 +102,8 @@ const PROJECTS = [
     ],
     category: "Full Stack · AI",
     highlight: "JPL Horizons + Kepler solver",
-    live: "#projects",
-    repo: "#projects",
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+    live: "https://github.com/quangg1/ASTRO_EDU",
+    repo: "https://github.com/quangg1/ASTRO_EDU",
   },
   {
     title: "Mood Garden",
@@ -124,10 +120,8 @@ const PROJECTS = [
     ],
     category: "Full Stack",
     highlight: "Vitest · Playwright · Render",
-    live: "#projects",
-    repo: "#projects",
-    videoUrl:
-      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    live: "https://github.com/quangg1",
+    repo: "https://github.com/quangg1",
   },
 ];
 const EXPERIENCE = [
@@ -200,66 +194,13 @@ function useTypingEffect(
   return displayed;
 }
 
-function SkillBar({
-  name,
-  level,
-  delay,
-}: {
-  name: string;
-  level: number;
-  delay: number;
-}) {
-  const [animated, setAnimated] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setAnimated(true);
-      },
-      { threshold: 0.3 },
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className="mb-3">
-      <div className="flex justify-between mb-1">
-        <span className="text-sm font-mono text-foreground/80">
-          {name}
-        </span>
-        <span className="text-xs font-mono text-primary">
-          {level}%
-        </span>
-      </div>
-      <div className="h-[2px] bg-white/5 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-1000 ease-out"
-          style={{
-            width: animated ? `${level}%` : "0%",
-            transitionDelay: `${delay}ms`,
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 function ProjectSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const go = (next: number) => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    setPlaying(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-    }
     setCurrentIndex(next);
     setTimeout(() => setIsTransitioning(false), 400);
   };
@@ -269,25 +210,12 @@ function ProjectSlider() {
   const handlePrev = () =>
     go((currentIndex - 1 + PROJECTS.length) % PROJECTS.length);
 
-  const togglePlay = () => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (el.paused) {
-      el.muted = false;
-      el.play();
-      setPlaying(true);
-    } else {
-      el.pause();
-      setPlaying(false);
-    }
-  };
-
   const project = PROJECTS[currentIndex];
 
   return (
     <div className="relative w-full">
-      <div className="flex flex-col lg:flex-row gap-8 items-center bg-card/40 border border-border rounded-lg p-6 md:p-8">
-        <div className="w-full lg:w-1/3 flex flex-col justify-center order-2 lg:order-1">
+      <div className="flex flex-col lg:flex-row gap-8 items-stretch bg-card/40 border border-border rounded-lg p-6 md:p-8">
+        <div className="w-full lg:w-1/2 flex flex-col justify-center">
           <div className="flex items-center gap-3 mb-6">
             <span className="text-xs font-mono text-primary border border-primary/30 px-2 py-1 rounded-sm">
               {project.category}
@@ -315,9 +243,29 @@ function ProjectSlider() {
               </span>
             ))}
           </div>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={project.repo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 text-xs font-mono font-semibold hover:bg-accent transition-colors"
+            >
+              <Github size={14} /> View on GitHub
+            </a>
+            {project.live !== project.repo && (
+              <a
+                href={project.live}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 border border-border px-4 py-2.5 text-xs font-mono text-foreground/80 hover:border-primary/50 hover:text-primary transition-colors"
+              >
+                <ExternalLink size={14} /> Live demo
+              </a>
+            )}
+          </div>
         </div>
 
-        <div className="w-full lg:w-2/3 order-1 lg:order-2 relative aspect-[16/10] bg-black border border-border rounded-md overflow-hidden">
+        <div className="w-full lg:w-1/2 relative aspect-[16/10] bg-zinc-950 border border-border rounded-md overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-10 bg-zinc-900 border-b border-border flex items-center px-4 z-20 gap-2">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -325,33 +273,27 @@ function ProjectSlider() {
               <div className="w-3 h-3 rounded-full bg-green-500/80" />
             </div>
             <div className="mx-auto bg-black/50 border border-white/5 rounded-md px-4 py-1 text-[10px] font-mono text-muted-foreground w-1/2 text-center truncate">
-              demo · {project.title}
+              {project.title.toLowerCase().replace(/\s+/g, "-")}
             </div>
           </div>
-
-          <div className="absolute top-10 left-0 right-0 bottom-0 bg-zinc-950">
-            <video
-              ref={videoRef}
-              key={project.title}
-              src={project.videoUrl}
-              loop
-              playsInline
-              controls
-              className="w-full h-full object-cover"
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
-            />
-            {!playing && (
-              <button
-                type="button"
-                onClick={togglePlay}
-                className="absolute inset-0 z-10 flex items-center justify-center bg-black/35 hover:bg-black/20 transition-colors"
+          <div className="absolute top-10 inset-x-0 bottom-0 flex flex-col justify-between p-8 bg-[radial-gradient(ellipse_at_top_right,_rgba(220,38,38,0.18),_transparent_55%)]">
+            <p
+              className="text-xs font-mono text-primary tracking-widest uppercase"
+              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              Selected work
+            </p>
+            <div>
+              <p
+                className="text-4xl md:text-5xl font-black text-foreground leading-none mb-3"
+                style={{ fontFamily: "'Rajdhani', sans-serif" }}
               >
-                <span className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 text-sm font-mono font-semibold">
-                  <PlayCircle size={18} /> Play demo
-                </span>
-              </button>
-            )}
+                {String(currentIndex + 1).padStart(2, "0")}
+              </p>
+              <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+                Built end-to-end — architecture, implementation, and the last mile that makes it usable.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -389,57 +331,24 @@ function ProjectSlider() {
 }
 
 function InternshipGallery() {
-  const [images, setImages] = useState<string[]>([
-    imgAbout,
-    imgMem1,
-    imgMem2,
-  ]);
+  const images = [imgAbout, imgMem1, imgMem2];
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(
     null,
   );
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    if (!e.target.files) return;
-    const added = Array.from(e.target.files).map((f) =>
-      URL.createObjectURL(f),
-    );
-    setImages((prev) => [...prev, ...added]);
-    e.target.value = "";
-  };
 
   return (
     <div className="mt-16 border border-border bg-card/20 p-6 md:p-10 rounded-sm">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
-        <div>
-          <h3
-            className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-2"
-            style={{ fontFamily: "'Rajdhani', sans-serif" }}
-          >
-            <ImageIcon size={20} className="text-primary" />
-            INTERNSHIP MEMORIES
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1 font-mono">
-            Click a photo to open full size
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 bg-primary/10 text-primary border border-primary/30 px-4 py-2.5 text-xs font-mono hover:bg-primary/20 transition-colors"
+      <div className="mb-10">
+        <h3
+          className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-2"
+          style={{ fontFamily: "'Rajdhani', sans-serif" }}
         >
-          <Upload size={14} /> Upload Photos
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*"
-          className="hidden"
-          onChange={handleUpload}
-        />
+          <ImageIcon size={20} className="text-primary" />
+          LIFE AT VERON
+        </h3>
+        <p className="text-sm text-muted-foreground mt-1 font-mono">
+          A few moments from the internship — click to open full size
+        </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -563,7 +472,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen bg-background text-foreground"
+      className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-white"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <div
@@ -610,6 +519,15 @@ export default function App() {
                 {item}
               </button>
             ))}
+            <button
+              onClick={() => scrollTo("contact")}
+              className="bg-primary text-primary-foreground px-4 py-2 text-xs font-mono font-semibold tracking-widest uppercase hover:bg-accent transition-colors"
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              Let&apos;s talk
+            </button>
           </div>
 
           <button
@@ -634,13 +552,22 @@ export default function App() {
                 {item}
               </button>
             ))}
+            <button
+              onClick={() => scrollTo("contact")}
+              className="mt-4 w-full bg-primary text-primary-foreground py-3 text-xs font-mono font-semibold tracking-widest uppercase"
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              Let&apos;s talk
+            </button>
           </div>
         )}
       </nav>
 
       <section
         id="hero"
-        className="relative min-h-screen flex flex-col justify-center overflow-hidden"
+        className="relative min-h-screen flex flex-col justify-center overflow-hidden scroll-mt-20"
       >
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -701,10 +628,10 @@ export default function App() {
             </div>
 
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-10">
-              Computer Science student passionate about building
-              modern web applications and scalable systems.
-              Eager to learn, contribute to real-world projects,
-              and grow as a Software Engineer.
+              IT student in Ho Chi Minh City. I like taking
+              things apart until I understand them — then
+              shipping backend and AI tools that people actually
+              open the next morning.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -771,16 +698,16 @@ export default function App() {
 
       <section
         id="about"
-        className="py-24 border-t border-border"
+        className="py-24 border-t border-border scroll-mt-20"
       >
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-16 items-start">
             <div className="relative">
               <div className="relative overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1537511446984-935f663eb1f4?w=600&h=720&fit=crop&auto=format"
-                  alt="Developer setup"
-                  className="w-full h-80 md:h-[480px] object-cover grayscale contrast-110"
+                  src={imgAbout}
+                  alt="Nguyễn Minh Phú Quang"
+                  className="w-full h-80 md:h-[520px] object-cover grayscale contrast-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                 <div className="absolute inset-0 bg-primary/10 mix-blend-color" />
@@ -808,29 +735,34 @@ export default function App() {
                   quang = {"{"}
                   <br />
                   {"  "}
-                  <span className="text-accent">
-                    location
-                  </span>:{" "}
+                  <span className="text-accent">from</span>:{" "}
                   <span className="text-foreground/70">
-                    "HCM City, VN"
+                    "Ho Chi Minh City"
                   </span>
                   ,
                   <br />
                   {"  "}
                   <span className="text-accent">
-                    focus
+                    studying
                   </span>:{" "}
                   <span className="text-foreground/70">
-                    "Full-stack Web Dev"
+                    "Software Engineering"
                   </span>
                   ,
                   <br />
                   {"  "}
                   <span className="text-accent">
-                    status
+                    superpower
                   </span>:{" "}
+                  <span className="text-foreground/70">
+                    "staying with hard problems"
+                  </span>
+                  ,
+                  <br />
+                  {"  "}
+                  <span className="text-accent">now</span>:{" "}
                   <span className="text-green-400">
-                    "seeking internship"
+                    "looking for the right team"
                   </span>
                   <br />
                   {"}"}
@@ -855,36 +787,39 @@ export default function App() {
                 className="text-4xl md:text-5xl font-black text-foreground mb-6 leading-none"
                 style={{ fontFamily: "'Rajdhani', sans-serif" }}
               >
-                SHIPPING
+                THE PERSON
                 <br />
-                <span className="text-primary">PRODUCTION</span>
+                BEHIND
                 <br />
-                AI SYSTEMS
+                <span className="text-primary">THE WORK</span>
               </h2>
 
               <div className="space-y-4 text-muted-foreground leading-relaxed text-sm md:text-base">
                 <p>
-                  I am a Backend and AI Engineer intern who
-                  ships production-minded applications with
-                  Python, Node.js, and React: RAG pipelines,
-                  multi-agent systems, automated tests, and
-                  containers.
+                  I&apos;m Quang — an IT student in Ho Chi Minh
+                  City who gets restless until I understand how
+                  something actually works. I didn&apos;t fall
+                  in love with software through textbooks. I
+                  fell into it by breaking things, fixing them,
+                  and realizing I wanted to keep doing that for
+                  a living.
                 </p>
                 <p>
-                  At Veron Group I automated internal document
-                  workflows with n8n and OpenAI/Gemini, then
-                  built a RAG lesson planner so teachers get
-                  structured plans from uploaded curriculum —
-                  not a toy demo, an internal tool people
-                  actually used.
+                  University gave me the map. Interning taught
+                  me the terrain: messy inputs, real users,
+                  deadlines, and the gap between a demo that
+                  impresses and a tool someone opens every
+                  morning. That&apos;s the version of
+                  engineering I want to get good at — useful,
+                  not just clever.
                 </p>
                 <p>
-                  Independently I architected CosmoLearn (3D
-                  solar-system lab + LangGraph tutors) and Mood
-                  Garden (offline-first NestJS/FastAPI monorepo,
-                  CI, Render). I am looking for an AI/Software
-                  Engineer internship where I can own backend
-                  and AI features end-to-end.
+                  I&apos;m calm with unfinished problems,
+                  bilingual enough to work in English (TOEIC
+                  890), and happiest when I can own a slice of a
+                  system end-to-end. I don&apos;t already know
+                  everything. I will stay with a hard problem
+                  until I do.
                 </p>
               </div>
 
@@ -896,14 +831,14 @@ export default function App() {
               >
                 <div className="flex items-center gap-2">
                   <MapPin size={13} className="text-primary" />
-                  <span>HCM City, VN</span>
+                  <span>Ho Chi Minh City</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar
                     size={13}
                     className="text-primary"
                   />
-                  <span>Available Immediately</span>
+                  <span>Available immediately</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Zap size={13} className="text-primary" />
@@ -914,18 +849,24 @@ export default function App() {
               <div className="mt-8 flex gap-4">
                 <a
                   href="https://github.com/quangg1"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-2.5 border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-all rounded-sm"
                 >
                   <Github size={18} />
                 </a>
                 <a
                   href="https://www.linkedin.com/in/quang-nguy%E1%BB%85n-89b96a291"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-2.5 border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-all rounded-sm"
                 >
                   <Linkedin size={18} />
                 </a>
                 <a
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=nguyenminhphuquang123@gmail.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-2.5 border border-border hover:border-primary/50 text-muted-foreground hover:text-primary transition-all rounded-sm"
                 >
                   <Mail size={18} />
@@ -933,12 +874,37 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          <div className="grid sm:grid-cols-3 gap-4 mt-16">
+            {ABOUT_TRAITS.map((trait) => (
+              <div
+                key={trait.title}
+                className="border border-border bg-card/40 p-6"
+              >
+                <div className="flex items-center gap-2 mb-3 text-primary">
+                  {trait.icon}
+                  <h3
+                    className="text-sm font-bold tracking-wide text-foreground"
+                    style={{
+                      fontFamily: "'Rajdhani', sans-serif",
+                      fontSize: "1.05rem",
+                    }}
+                  >
+                    {trait.title}
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {trait.text}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       <section
         id="skills"
-        className="py-24 border-t border-border bg-card/30"
+        className="py-24 border-t border-border bg-card/30 scroll-mt-20"
       >
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-16">
@@ -958,13 +924,13 @@ export default function App() {
               className="text-4xl md:text-5xl font-black text-foreground leading-none"
               style={{ fontFamily: "'Rajdhani', sans-serif" }}
             >
-              TECHNICAL
-              <span className="text-primary"> ARSENAL</span>
+              WHAT I
+              <span className="text-primary"> WORK WITH</span>
             </h2>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
-            {SKILLS.map((group, gi) => (
+            {SKILLS.map((group) => (
               <div
                 key={group.category}
                 className="border border-border bg-card p-6 rounded-sm"
@@ -982,13 +948,16 @@ export default function App() {
                     {group.category}
                   </span>
                 </div>
-                {group.items.map((skill, si) => (
-                  <SkillBar
-                    key={skill.name}
-                    name={skill.name}
-                    level={skill.level}
-                    delay={gi * 100 + si * 80}
-                  />
+                {group.items.map((skill) => (
+                  <div
+                    key={skill}
+                    className="flex items-center gap-2 mb-3 last:mb-0"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-primary shrink-0" />
+                    <span className="text-sm font-mono text-foreground/80">
+                      {skill}
+                    </span>
+                  </div>
                 ))}
               </div>
             ))}
@@ -1005,16 +974,13 @@ export default function App() {
             </p>
             <div className="flex flex-wrap gap-2">
               {[
-                "Python",
-                "JavaScript",
-                "Next.js",
                 "Firebase",
                 "MySQL",
                 "AWS (EC2/S3)",
                 "Jest",
                 "Redux",
-                "GraphQL Basics",
-                "UI/UX Design",
+                "GraphQL",
+                "UI/UX",
               ].map((tech) => (
                 <span
                   key={tech}
@@ -1033,7 +999,7 @@ export default function App() {
 
       <section
         id="projects"
-        className="py-24 border-t border-border"
+        className="py-24 border-t border-border scroll-mt-20"
       >
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-16">
@@ -1057,7 +1023,9 @@ export default function App() {
               <span className="text-primary"> WORK</span>
             </h2>
             <a
-              href="#"
+              href="https://github.com/quangg1"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase group"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
@@ -1077,7 +1045,7 @@ export default function App() {
 
       <section
         id="experience"
-        className="py-24 border-t border-border bg-card/30"
+        className="py-24 border-t border-border bg-card/30 scroll-mt-20"
       >
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-16">
@@ -1190,7 +1158,7 @@ export default function App() {
       </section>
       <section
         id="education"
-        className="py-24 border-t border-border"
+        className="py-24 border-t border-border scroll-mt-20"
       >
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-16">
@@ -1204,6 +1172,13 @@ export default function App() {
             </span>
             <div className="flex-1 h-px bg-border" />
           </div>
+          <h2
+            className="text-4xl md:text-5xl font-black text-foreground leading-none mb-10"
+            style={{ fontFamily: "'Rajdhani', sans-serif" }}
+          >
+            SCHOOL &
+            <span className="text-primary"> CERTS</span>
+          </h2>
           <div className="grid md:grid-cols-2 gap-10">
             <div className="border border-border bg-card p-8">
               <p className="text-xs font-mono text-primary mb-2">
@@ -1224,7 +1199,9 @@ export default function App() {
               <p
                 className="mt-6 text-3xl font-black text-primary"
                 style={{ fontFamily: "'Rajdhani', sans-serif" }}
-              ></p>
+              >
+                GPA {EDUCATION.gpa}
+              </p>
             </div>
             <div className="space-y-4">
               {CERTS.map((c) => (
@@ -1251,7 +1228,7 @@ export default function App() {
       </section>
       <section
         id="contact"
-        className="py-24 border-t border-border"
+        className="py-24 border-t border-border scroll-mt-20"
       >
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-16">
@@ -1261,7 +1238,7 @@ export default function App() {
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
-              05 / Contact
+              06 / Contact
             </span>
             <div className="flex-1 h-px bg-border" />
           </div>
@@ -1277,9 +1254,9 @@ export default function App() {
                 <span className="text-primary">SOMETHING</span>
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-8 text-sm md:text-base">
-                Whether you have an internship role, a freelance
-                project, or just want to connect — my inbox is
-                open. I typically respond within 24 hours.
+                Looking for an AI or Software Engineering
+                internship — or just want to talk? Write me.
+                I usually reply within a day.
               </p>
 
               <div
@@ -1290,6 +1267,8 @@ export default function App() {
               >
                 <a
                   href="https://mail.google.com/mail/?view=cm&fs=1&to=nguyenminhphuquang123@gmail.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
                 >
                   <Mail size={14} className="text-primary" />
@@ -1301,6 +1280,8 @@ export default function App() {
                 </a>
                 <a
                   href="https://github.com/quangg1"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
                 >
                   <Github size={14} className="text-primary" />
@@ -1312,6 +1293,8 @@ export default function App() {
                 </a>
                 <a
                   href="https://www.linkedin.com/in/quang-nguy%E1%BB%85n-89b96a291"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
                 >
                   <Linkedin
@@ -1370,6 +1353,17 @@ function ContactForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const subject = encodeURIComponent(
+      `Hello Quang — ${form.name}`,
+    );
+    const body = encodeURIComponent(
+      `${form.message}\n\n— ${form.name}\n${form.email}`,
+    );
+    window.open(
+      `https://mail.google.com/mail/?view=cm&fs=1&to=nguyenminhphuquang123@gmail.com&su=${subject}&body=${body}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
     setSent(true);
   };
 
@@ -1420,7 +1414,7 @@ function ContactForm() {
           }
           className="w-full bg-card border border-border px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60 transition-colors font-mono rounded-sm"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
-          placeholder="John Doe"
+          placeholder="Your name"
         />
       </div>
       <div>
@@ -1439,7 +1433,7 @@ function ContactForm() {
           }
           className="w-full bg-card border border-border px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60 transition-colors font-mono rounded-sm"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
-          placeholder="john@example.com"
+          placeholder="you@company.com"
         />
       </div>
       <div>
@@ -1458,7 +1452,7 @@ function ContactForm() {
           }
           className="w-full bg-card border border-border px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/60 transition-colors font-mono rounded-sm resize-none"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
-          placeholder="Hello Quang, we have an internship opening..."
+          placeholder="Hi Quang, I'd like to talk about..."
         />
       </div>
       <button
