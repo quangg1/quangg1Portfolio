@@ -23,9 +23,24 @@ import {
   Wrench,
   Heart,
 } from "lucide-react";
-import imgAbout from "figma:asset/5b4f19c9a3ac274ee7fa0dd44872aab24c3f9151.png";
-import imgMem1 from "figma:asset/a9936188eb6db85cde1d0d3430a54cec4b131df6.png";
-import imgMem2 from "figma:asset/e0cc2bffa238528c70726effe30d53298f9dc026.png";
+
+const imgAbout = (
+  Object.values(
+    import.meta.glob("../assets/about.{png,jpg,jpeg,webp}", {
+      eager: true,
+      import: "default",
+    }),
+  )[0] as string
+);
+
+const VERON_PHOTOS = Object.entries(
+  import.meta.glob("../assets/veron/*.{png,jpg,jpeg,webp}", {
+    eager: true,
+    import: "default",
+  }),
+)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, src]) => src as string);
 
 const NAV_ITEMS = [
   "About",
@@ -331,41 +346,88 @@ function ProjectSlider() {
 }
 
 function InternshipGallery() {
-  const images = [imgAbout, imgMem1, imgMem2];
+  const images = VERON_PHOTOS;
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(
     null,
   );
+  const [hovered, setHovered] = useState<number | null>(null);
+  const n = images.length;
+  const mid = (n - 1) / 2;
+  const fanStep = n <= 2 ? 16 : n <= 4 ? 12 : 8;
+
+  useEffect(() => {
+    if (lightboxIdx === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIdx(null);
+      if (e.key === "ArrowLeft") {
+        setLightboxIdx((i) =>
+          i === null ? i : (i - 1 + n) % n,
+        );
+      }
+      if (e.key === "ArrowRight") {
+        setLightboxIdx((i) => (i === null ? i : (i + 1) % n));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxIdx, n]);
 
   return (
-    <div className="mt-16 border border-border bg-card/20 p-6 md:p-10 rounded-sm">
-      <div className="mb-10">
+    <div className="mt-16">
+      <div className="mb-8 text-center">
         <h3
-          className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-2"
+          className="text-xl md:text-2xl font-bold text-foreground flex items-center justify-center gap-2"
           style={{ fontFamily: "'Rajdhani', sans-serif" }}
         >
           <ImageIcon size={20} className="text-primary" />
           LIFE AT VERON
         </h3>
         <p className="text-sm text-muted-foreground mt-1 font-mono">
-          A few moments from the internship — click to open full size
+          Photos on the table — click one to open
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {images.map((src, i) => (
-          <button
-            key={`${src}-${i}`}
-            type="button"
-            onClick={() => setLightboxIdx(i)}
-            className="relative aspect-[4/5] overflow-hidden border border-border rounded-sm group"
-          >
-            <img
-              src={src}
-              alt={`Memory ${i + 1}`}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          </button>
-        ))}
+      <div className="relative mx-auto h-[380px] sm:h-[440px] md:h-[500px] max-w-4xl">
+        {images.map((src, i) => {
+          const offset = i - mid;
+          const angle = offset * fanStep;
+          const lift = Math.abs(offset) * 18;
+          const isHover = hovered === i;
+
+          return (
+            <button
+              key={`${src}-${i}`}
+              type="button"
+              onClick={() => setLightboxIdx(i)}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+              className="absolute left-1/2 bottom-8 origin-bottom w-[160px] sm:w-[200px] md:w-[230px] bg-[#1a1a1a] p-2 pb-8 border border-white/10 shadow-[0_18px_40px_rgba(0,0,0,0.55)] cursor-pointer"
+              style={{
+                transform: isHover
+                  ? `translateX(calc(-50% + ${offset * 48}px)) translateY(-56px) rotate(0deg) scale(1.08)`
+                  : `translateX(calc(-50% + ${offset * 48}px)) translateY(${lift}px) rotate(${angle}deg)`,
+                zIndex: isHover ? 40 : 10 + i,
+                transition:
+                  "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            >
+              <img
+                src={src}
+                alt={`Veron memory ${i + 1}`}
+                className="w-full aspect-[4/5] object-cover"
+                draggable={false}
+              />
+              <span
+                className="absolute bottom-2 left-0 right-0 text-center text-[10px] tracking-widest uppercase text-muted-foreground"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+              >
+                Veron · {String(i + 1).padStart(2, "0")}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {lightboxIdx !== null && (
@@ -380,22 +442,34 @@ function InternshipGallery() {
           >
             <X size={24} />
           </button>
-          <img
-            src={images[lightboxIdx]}
-            alt={`Photo ${lightboxIdx + 1}`}
-            className="max-w-full max-h-[85vh] object-contain rounded-md border border-border/50"
+          <div
+            className="bg-[#1a1a1a] p-3 pb-10 border border-white/10 shadow-2xl max-w-3xl w-full"
             onClick={(e) => e.stopPropagation()}
-          />
-          {images.length > 1 && (
+          >
+            <img
+              src={images[lightboxIdx]}
+              alt={`Photo ${lightboxIdx + 1}`}
+              className="w-full max-h-[75vh] object-contain"
+            />
+            <p
+              className="mt-3 text-center text-xs font-mono tracking-widest uppercase text-muted-foreground"
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              Veron · {String(lightboxIdx + 1).padStart(2, "0")}{" "}
+              / {String(n).padStart(2, "0")}
+            </p>
+          </div>
+          {n > 1 && (
             <>
               <button
                 type="button"
-                className="absolute left-4 md:left-10 p-3 rounded-full border border-border bg-card/80"
+                className="absolute left-4 md:left-10 p-3 rounded-full border border-border bg-card/80 hover:border-primary/50 hover:text-primary"
                 onClick={(e) => {
                   e.stopPropagation();
                   setLightboxIdx(
-                    (lightboxIdx - 1 + images.length) %
-                      images.length,
+                    (lightboxIdx - 1 + n) % n,
                   );
                 }}
               >
@@ -403,19 +477,14 @@ function InternshipGallery() {
               </button>
               <button
                 type="button"
-                className="absolute right-4 md:right-10 p-3 rounded-full border border-border bg-card/80"
+                className="absolute right-4 md:right-10 p-3 rounded-full border border-border bg-card/80 hover:border-primary/50 hover:text-primary"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setLightboxIdx(
-                    (lightboxIdx + 1) % images.length,
-                  );
+                  setLightboxIdx((lightboxIdx + 1) % n);
                 }}
               >
                 <ChevronRight size={24} />
               </button>
-              <div className="absolute bottom-8 font-mono text-xs bg-card/80 px-4 py-2 rounded-full border border-border">
-                {lightboxIdx + 1} / {images.length}
-              </div>
             </>
           )}
         </div>
